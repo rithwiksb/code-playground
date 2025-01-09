@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Playground</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.10/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.10/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.10/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.10/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.10/addon/edit/closebrackets.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.10/addon/edit/matchbrackets.js"></script>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: white;
+            display: flex;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+        }
+        .editor {
+            width: 50%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .output {
+            width: 50%;
+            padding: 20px;
+            background-color: #2a2a2a;
+            overflow-y: auto;
+        }
+        .btn-run {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-run:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Left Code Editor Section -->
+        <div class="editor">
+            <h1>Code Playground</h1>
+            <textarea id="code" name="code" class="code-mirror"></textarea>
+            <button id="run" class="btn-run">Run Code</button>
+        </div>
+
+        <!-- Right Output Section -->
+        <div class="output">
+            <h2>Output</h2>
+            <pre id="output" class="code-mirror"></pre>
+        </div>
+    </div>
+
+    <script>
+        const editor = CodeMirror.fromTextArea(document.getElementById('code'), {
+            lineNumbers: true,
+            mode: "python",
+            theme: "dracula",
+            autoCloseBrackets: true,
+            matchBrackets: true,
+        });
+
+        document.getElementById("run").addEventListener("click", () => {
+            const code = editor.getValue();
+            fetch("/run_code", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    const output = data.success ? data.output : `Error: ${data.error}`;
+                    document.getElementById("output").textContent = output;
+                });
+        });
+    </script>
+
+</body>
+</html>
